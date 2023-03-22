@@ -24,9 +24,13 @@ class Produit
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commentaire::class)]
     private Collection $commentaires;
 
+    #[ORM\OneToMany(mappedBy: 'Produits', targetEntity: Commentaire::class, orphanRemoval: true)]
+    private Collection $commentaire;
+
     public function __construct()
     {
         $this->commentaires = new ArrayCollection();
+        $this->commentaire = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -64,6 +68,36 @@ class Produit
     public function getCommentaires(): Collection
     {
         return $this->commentaires;
+    }
+
+    /**
+     * @return Collection<int, Commentaire>
+     */
+    public function getCommentaire(): Collection
+    {
+        return $this->commentaire;
+    }
+
+    public function addCommentaire(Commentaire $commentaire): self
+    {
+        if (!$this->commentaire->contains($commentaire)) {
+            $this->commentaire->add($commentaire);
+            $commentaire->setProduits($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommentaire(Commentaire $commentaire): self
+    {
+        if ($this->commentaire->removeElement($commentaire)) {
+            // set the owning side to null (unless already changed)
+            if ($commentaire->getProduits() === $this) {
+                $commentaire->setProduits(null);
+            }
+        }
+
+        return $this;
     }
 
    

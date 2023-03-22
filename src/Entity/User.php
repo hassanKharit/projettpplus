@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -30,9 +32,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\ManyToOne(inversedBy: 'produit')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Commentaire $commentaire = null;
+    #[ORM\OneToMany(mappedBy: 'titre', targetEntity: Produits::class)]
+    private Collection $Commentaire;
+
+    #[ORM\Column(length: 255)]
+    private ?string $titre = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $description = null;
+
+    public function __construct()
+    {
+        $this->Commentaire = new ArrayCollection();
+    }
+
 
     public function getId(): ?int
     {
@@ -121,6 +134,60 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, Produits>
+     */
+    public function getCommentaire(): Collection
+    {
+        return $this->Commentaire;
+    }
+
+    public function addCommentaire(Produits $commentaire): self
+    {
+        if (!$this->Commentaire->contains($commentaire)) {
+            $this->Commentaire->add($commentaire);
+            $commentaire->setTitre($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommentaire(Produits $commentaire): self
+    {
+        if ($this->Commentaire->removeElement($commentaire)) {
+            // set the owning side to null (unless already changed)
+            if ($commentaire->getTitre() === $this) {
+                $commentaire->setTitre(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getTitre(): ?string
+    {
+        return $this->titre;
+    }
+
+    public function setTitre(string $titre): self
+    {
+        $this->titre = $titre;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+
+        return $this;
     }
 
   
