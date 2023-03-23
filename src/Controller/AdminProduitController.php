@@ -5,10 +5,11 @@ namespace App\Controller;
 use App\Entity\Produit;
 use App\Form\Produit1Type;
 use App\Repository\ProduitRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/admin/produit')]
 class AdminProduitController extends AbstractController
@@ -22,14 +23,26 @@ class AdminProduitController extends AbstractController
     }
 
     #[Route('/new', name: 'app_admin_produit_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, ProduitRepository $produitRepository): Response
+    public function new(FileUploader $fileUploader,Request $request, ProduitRepository $produitRepository): Response
     {
         $produit = new Produit();
         $form = $this->createForm(Produit1Type::class, $produit);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
+
+            $imageproduit=$form->get('image')->getData();
+            $imageproduit;
+
+            if ($imageproduit) {
+                $imageproduit_nom=$fileUploader->upload($imageproduit);
+                $produit->setnamephoto($imageproduit_nom);
+            }
+
+            
             $produitRepository->save($produit, true);
+
 
             return $this->redirectToRoute('app_admin_produit_index', [], Response::HTTP_SEE_OTHER);
         }
